@@ -18,7 +18,10 @@
   "homepage": "https://github.com/makewebspace/frontend-project-lvl3#readme",
   "jest": {
     "verbose": true,
-    "testURL": "http://localhost/"
+    "testURL": "http://localhost/",
+    "moduleNameMapper": {
+      "\\.(css)$": "<rootDir>/__fixtures__/styleStub.js"
+    }
   },
   "devDependencies": {
     "@babel/core": "^7.13.14",
