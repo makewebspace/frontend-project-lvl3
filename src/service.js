@@ -69,10 +69,14 @@ export const addFeed = (data, state, watchedState) => {
       throw new Error(`Что-то пошло не так... Ошибка: ${err.message}`);
     })
     .then((response) => {
-      if (response.data.status.http_code === 200) {
-        return parse(response.data.contents);
+      if (response.data.status.http_code !== 200) {
+        throw new Error('Ресурс не найден или не доступен...');
       }
-      throw new Error('Ресурс не содержит валидный RSS');
+      try {
+        return parse(response.data.contents);
+      } catch (_) {
+        throw new Error('Ресурс не содержит валидный RSS');
+      }
     })
     .then((parsedFeed) => normalize({ ...parsedFeed, url: data.url }))
     .then(({ feed, posts }) => {
