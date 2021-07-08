@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/makewebspace/frontend-project-lvl3#readme",
   "jest": {
+    "testEnvironment": "jsdom",
     "verbose": true,
     "testURL": "http://localhost/",
     "moduleNameMapper": {
