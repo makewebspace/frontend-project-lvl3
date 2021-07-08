@@ -124,7 +124,7 @@ const render = (state) => (path, value) => {
   }
 };
 
-const init = (state) => {
+export const init = (state) => {
   const watchedState = onChange(state, render(state));
 
   elements.feeds = document.querySelector('.feeds');

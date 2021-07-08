@@ -42,7 +42,7 @@ const normalize = ({ title, description, url, posts }) => {
   return { feed, posts: normalizedPosts };
 };
 
-const addFeed = (data, state, watchedState) => {
+export const addFeed = (data, state, watchedState) => {
   const error = validate(data.url, state);
   const isNotValid = error !== null;
 

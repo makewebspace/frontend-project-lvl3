@@ -1,5 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import * as view from './view.js';
+import view from './view.js';
 
 const initialState = {
   feeds: [],
