@@ -124,7 +124,7 @@ const render = (state) => (path, value) => {
   }
 };
 
-export const init = (state) => {
+export default (state) => {
   const watchedState = onChange(state, render(state));
 
   elements.feeds = document.querySelector('.feeds');
@@ -140,5 +140,3 @@ export const init = (state) => {
     addFeed(data, state, watchedState);
   });
 };
-
-export default { init };

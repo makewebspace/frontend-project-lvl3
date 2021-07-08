@@ -1,5 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import view from './view.js';
+import initView from './view.js';
 
 const initialState = {
   feeds: [],
@@ -16,5 +16,5 @@ const initialState = {
 };
 
 export default () => {
-  view.init(initialState);
+  initView(initialState);
 };
