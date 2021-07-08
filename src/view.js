@@ -1,5 +1,6 @@
+import i18n from 'i18next';
 import onChange from 'on-change';
-import { addFeed } from './service.js';
+import { addFeed, ADD_FEED_PROCESS } from './service.js';
 
 const elements = {};
 
@@ -53,7 +54,7 @@ const toPostElement = (post) => {
   title.setAttribute('_target', '_blank');
   title.setAttribute('rel', 'noopener noreferrer');
 
-  const button = createElement('button', ['btn', 'btn-outline-primary', 'btn-sm'], 'Просмотр');
+  const button = createElement('button', ['btn', 'btn-outline-primary', 'btn-sm'], i18n.t('show'));
 
   button.dataset.id = post.id;
   button.dataset.bsToggle = 'modal';
@@ -72,7 +73,7 @@ const renderFeeds = (state) => {
 
   state.feeds.map(toFeedElement).forEach(appendTo(fragment));
 
-  const container = createWrapper('Фиды', fragment);
+  const container = createWrapper(i18n.t('feeds'), fragment);
 
   elements.feeds.appendChild(container);
 };
@@ -84,7 +85,7 @@ const renderPosts = (state) => {
 
   state.posts.map(toPostElement).forEach(appendTo(fragment));
 
-  const container = createWrapper('Посты', fragment);
+  const container = createWrapper(i18n.t('posts'), fragment);
 
   elements.posts.appendChild(container);
 };
@@ -104,13 +105,13 @@ const renderSuccess = () => {
   clearForm();
   clearError();
   elements.feedback.classList.add('text-success');
-  elements.feedback.textContent = 'RSS успешно загружен';
+  elements.feedback.textContent = i18n.t('addFeedProcess.processed');
 };
 
 const renderError = (state) => {
   clearError();
   elements.feedback.classList.add('text-danger');
-  elements.feedback.textContent = state.addFeedProcess.error;
+  elements.feedback.textContent = i18n.t(state.addFeedProcess.error);
   elements.urlInput.classList.add('is-invalid');
 };
 
@@ -119,8 +120,8 @@ const render = (state) => (path, value) => {
   if (path === 'posts') renderPosts(state);
   if (path === 'addFeedProcess.error') renderError(state);
   if (path === 'addFeedProcess.state') {
-    if (value === 'processing') clearError();
-    if (value === 'processed') renderSuccess();
+    if (value === ADD_FEED_PROCESS.PROCESSING) clearError();
+    if (value === ADD_FEED_PROCESS.PROCESSED) renderSuccess();
   }
 };
 

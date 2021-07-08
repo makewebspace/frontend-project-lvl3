@@ -3,11 +3,20 @@ import * as yup from 'yup';
 import axios from 'axios';
 import parse from './parser.js';
 
+export const ADD_FEED_PROCESS = {
+  FILLING: 'filling',
+  PROCESSING: 'processing',
+  PROCESSED: 'processed',
+  FAILED: 'failed',
+  VAILD: 'valid',
+  INVALID: 'invalid',
+};
+
 const allOrigins = {
   get: (url) => `https://hexlet-allorigins.herokuapp.com/get?url=${encodeURIComponent(url)}`,
 };
 
-const schema = yup.string().required().url('Ссылка должна быть валидным URL');
+const schema = yup.string().required().url('addFeedProcess.errors.notValidUrl');
 
 const hasFeed = (url, state) => state.feeds.some((feed) => feed.url === url);
 
@@ -18,7 +27,7 @@ const validate = (url, state) => {
     return e.message;
   }
   if (hasFeed(url, state)) {
-    return 'RSS уже существует';
+    return 'addFeedProcess.errors.rssFeedExists';
   }
   return null;
 };
@@ -50,43 +59,43 @@ export const addFeed = (data, state, watchedState) => {
   watchedState.addFeedProcess.error = error;
 
   if (isNotValid) {
-    watchedState.addFeedProcess.validationState = 'invalid';
+    watchedState.addFeedProcess.validationState = ADD_FEED_PROCESS.INVALID;
     return;
   }
 
-  watchedState.addFeedProcess.validationState = 'valid';
-  watchedState.addFeedProcess.state = 'processing';
+  watchedState.addFeedProcess.validationState = ADD_FEED_PROCESS.VAILD;
+  watchedState.addFeedProcess.state = ADD_FEED_PROCESS.PROCESSING;
 
   axios
     .get(allOrigins.get(data.url))
     .catch((err) => {
       if (err.response) {
-        throw new Error('Сервис не доступен. Попробуйте позже...');
+        throw new Error('addFeedProcess.errors.notAvailableService');
       }
       if (err.request) {
-        throw new Error('Проблемы с сетью. Проверьте настройки сети!');
+        throw new Error('addFeedProcess.errors.netWorkProblem');
       }
-      throw new Error(`Что-то пошло не так... Ошибка: ${err.message}`);
+      throw new Error('addFeedProcess.errors.unexpected');
     })
     .then((response) => {
       if (response.data.status.http_code !== 200) {
-        throw new Error('Ресурс не найден или не доступен...');
+        throw new Error('addFeedProcess.errors.notFound');
       }
       try {
         return parse(response.data.contents);
       } catch (_) {
-        throw new Error('Ресурс не содержит валидный RSS');
+        throw new Error('addFeedProcess.errors.notValidRss');
       }
     })
     .then((parsedFeed) => normalize({ ...parsedFeed, url: data.url }))
     .then(({ feed, posts }) => {
       watchedState.feeds = [feed, ...state.feeds];
       watchedState.posts = [...posts, ...state.posts];
-      watchedState.addFeedProcess.state = 'processed';
+      watchedState.addFeedProcess.state = ADD_FEED_PROCESS.PROCESSED;
     })
     .catch((err) => {
       watchedState.addFeedProcess.error = err.message;
-      watchedState.addFeedProcess.state = 'failed';
+      watchedState.addFeedProcess.state = ADD_FEED_PROCESS.FAILED;
     });
 };
 
