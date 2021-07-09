@@ -1,6 +1,6 @@
 import i18n from 'i18next';
 import onChange from 'on-change';
-import { addFeed, ADD_FEED_PROCESS } from './service.js';
+import { addFeed, ADD_FEED_STATE } from './service.js';
 
 const elements = {};
 
@@ -120,8 +120,8 @@ const render = (state) => (path, value) => {
   if (path === 'posts') renderPosts(state);
   if (path === 'addFeedProcess.error') renderError(state);
   if (path === 'addFeedProcess.state') {
-    if (value === ADD_FEED_PROCESS.PROCESSING) clearError();
-    if (value === ADD_FEED_PROCESS.PROCESSED) renderSuccess();
+    if (value === ADD_FEED_STATE.PROCESSING) clearError();
+    if (value === ADD_FEED_STATE.PROCESSED) renderSuccess();
   }
 };
 

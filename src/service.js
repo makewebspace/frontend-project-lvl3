@@ -3,7 +3,7 @@ import * as yup from 'yup';
 import axios from 'axios';
 import parse from './parser.js';
 
-export const ADD_FEED_PROCESS = {
+export const ADD_FEED_STATE = {
   FILLING: 'filling',
   PROCESSING: 'processing',
   PROCESSED: 'processed',
@@ -59,12 +59,12 @@ export const addFeed = (data, state, watchedState) => {
   watchedState.addFeedProcess.error = error;
 
   if (isNotValid) {
-    watchedState.addFeedProcess.validationState = ADD_FEED_PROCESS.INVALID;
+    watchedState.addFeedProcess.validationState = ADD_FEED_STATE.INVALID;
     return;
   }
 
-  watchedState.addFeedProcess.validationState = ADD_FEED_PROCESS.VAILD;
-  watchedState.addFeedProcess.state = ADD_FEED_PROCESS.PROCESSING;
+  watchedState.addFeedProcess.validationState = ADD_FEED_STATE.VAILD;
+  watchedState.addFeedProcess.state = ADD_FEED_STATE.PROCESSING;
 
   axios
     .get(allOrigins.get(data.url))
@@ -91,11 +91,11 @@ export const addFeed = (data, state, watchedState) => {
     .then(({ feed, posts }) => {
       watchedState.feeds = [feed, ...state.feeds];
       watchedState.posts = [...posts, ...state.posts];
-      watchedState.addFeedProcess.state = ADD_FEED_PROCESS.PROCESSED;
+      watchedState.addFeedProcess.state = ADD_FEED_STATE.PROCESSED;
     })
     .catch((err) => {
       watchedState.addFeedProcess.error = err.message;
-      watchedState.addFeedProcess.state = ADD_FEED_PROCESS.FAILED;
+      watchedState.addFeedProcess.state = ADD_FEED_STATE.FAILED;
     });
 };
 
