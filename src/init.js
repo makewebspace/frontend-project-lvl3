@@ -13,6 +13,7 @@ const initialState = {
     data: { url: '' },
     error: null,
   },
+  timerToken: null,
   uiState: {
     seenPosts: [],
   },
