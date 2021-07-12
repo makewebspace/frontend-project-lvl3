@@ -18,7 +18,9 @@ const allOrigins = {
   get: (url) => `https://hexlet-allorigins.herokuapp.com/get?url=${encodeURIComponent(url)}`,
 };
 
-const schema = yup.string().required().url('addFeedProcess.errors.notValidUrl');
+const schema = yup.string()
+  .required('addFeedProcess.errors.required')
+  .url('addFeedProcess.errors.notValidUrl');
 
 const hasFeed = (url, state) => state.feeds.some((feed) => feed.url === url);
 

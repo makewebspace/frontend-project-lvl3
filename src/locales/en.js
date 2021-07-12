@@ -6,6 +6,7 @@ export default {
     addFeedProcess: {
       processed: 'RSS successfully loaded',
       errors: {
+        required: 'Should not be empty',
         notValidUrl: 'The link must be a valid URL',
         rssFeedExists: 'RSS already exists',
         notAvailableService: 'Service is unavailable. Try later...',

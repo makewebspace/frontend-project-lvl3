@@ -6,10 +6,11 @@ export default {
     addFeedProcess: {
       processed: 'RSS успешно загружен',
       errors: {
+        required: 'Не должно быть пустым',
         notValidUrl: 'Ссылка должна быть валидным URL',
         rssFeedExists: 'RSS уже существует',
         notAvailableService: 'Сервис не доступен. Попробуйте позже...',
-        netWorkProblem: 'Проблемы с сетью. Проверьте настройки сети!',
+        netWorkProblem: 'Ошибка сети',
         unexpected: 'Что-то пошло не так...',
         notFound: 'Ресурс не найден или не доступен...',
         notValidRss: 'Ресурс не содержит валидный RSS',
