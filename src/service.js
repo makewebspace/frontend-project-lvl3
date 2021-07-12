@@ -15,7 +15,7 @@ export const ADD_FEED_STATE = {
 const TIME_TO_LIVE = 5000; // in ms
 
 const allOrigins = {
-  get: (url) => `https://hexlet-allorigins.herokuapp.com/get?url=${encodeURIComponent(url)}`,
+  get: (url) => `https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(url)}`,
 };
 
 const schema = yup.string()

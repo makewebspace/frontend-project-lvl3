@@ -1,5 +1,3 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/js/dist/modal.js';
 import i18next from 'i18next';
 import initView from './view.js';
 import resources from './locales';
@@ -23,5 +21,5 @@ const initialState = {
 
 export default () => {
   const options = { lng: 'ru', resources };
-  i18next.init(options).then(() => initView(initialState));
+  return i18next.init(options).then(() => initView(initialState));
 };

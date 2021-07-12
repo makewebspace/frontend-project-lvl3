@@ -108,9 +108,14 @@ const clearError = () => {
   elements.urlInput.classList.remove('is-invalid');
 };
 
+const toggleButton = (stateName) => {
+  elements.submitBtn.disabled = stateName === 'disable';
+};
+
 const renderSuccess = () => {
   clearForm();
   clearError();
+  toggleButton('active');
   elements.feedback.classList.add('text-success');
   elements.feedback.textContent = i18n.t('addFeedProcess.processed');
 };
@@ -136,8 +141,12 @@ const render = (state) => (path, value) => {
   if (path === 'uiState.activePost') renderModal(state);
   if (path === 'addFeedProcess.error') renderError(state);
   if (path === 'addFeedProcess.state') {
-    if (value === ADD_FEED_STATE.PROCESSING) clearError();
+    if (value === ADD_FEED_STATE.PROCESSING) {
+      toggleButton('disable');
+      clearError();
+    }
     if (value === ADD_FEED_STATE.PROCESSED) renderSuccess();
+    if (value === ADD_FEED_STATE.FAILED) toggleButton('active');
   }
 };
 
@@ -148,6 +157,7 @@ export default (state) => {
   elements.posts = document.querySelector('.posts');
   elements.feedback = document.querySelector('.feedback');
   elements.addFeedForm = document.querySelector('.rss-form');
+  elements.submitBtn = document.querySelector('.rss-form button[type="submit"]');
   elements.urlInput = document.getElementById('url-input');
   elements.modal = document.getElementById('modal');
 
