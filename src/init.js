@@ -1,4 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/js/dist/modal.js';
 import i18next from 'i18next';
 import initView from './view.js';
 import resources from './locales';
@@ -16,6 +17,7 @@ const initialState = {
   timerToken: null,
   uiState: {
     seenPosts: [],
+    activePost: {},
   },
 };
 

@@ -121,4 +121,17 @@ export const addFeed = (data, state, watchedState) => {
     });
 };
 
-export default { addFeed };
+export const previewPost = (postId, state, watchedState) => {
+  const { seenPosts } = state.uiState;
+  const isActivePost = (post) => post.id === postId;
+
+  watchedState.uiState.activePost = state.posts.find(isActivePost);
+
+  if (seenPosts.includes(postId)) return;
+
+  watchedState.uiState.seenPosts = [...seenPosts, postId];
+};
+
+export const clearActivePost = (watchedState) => {
+  watchedState.uiState.activePost = {};
+};
