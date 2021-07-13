@@ -19,10 +19,7 @@
   "jest": {
     "testEnvironment": "jsdom",
     "verbose": true,
-    "testURL": "http://localhost/",
-    "moduleNameMapper": {
-      "\\.(css)$": "<rootDir>/__fixtures__/styleStub.js"
-    }
+    "testURL": "http://localhost/"
   },
   "devDependencies": {
     "@babel/core": "^7.14.6",

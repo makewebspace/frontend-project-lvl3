@@ -14,26 +14,23 @@ export const ADD_FEED_STATE = {
 
 const TIME_TO_LIVE = 5000; // in ms
 
-const allOrigins = {
+const proxy = {
   get: (url) => `https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(url)}`,
 };
 
-const schema = yup.string()
+const baseSchema = yup.string()
   .required('addFeedProcess.errors.required')
   .url('addFeedProcess.errors.notValidUrl');
 
-const hasFeed = (url, state) => state.feeds.some((feed) => feed.url === url);
-
 const validate = (url, state) => {
+  const urls = state.feeds.map((feed) => feed.url);
+  const schema = baseSchema.notOneOf(urls, 'addFeedProcess.errors.rssFeedExists');
   try {
     schema.validateSync(url, { abortEarly: true });
+    return null;
   } catch (e) {
     return e.message;
   }
-  if (hasFeed(url, state)) {
-    return 'addFeedProcess.errors.rssFeedExists';
-  }
-  return null;
 };
 
 const generateId = () => `_${Math.random().toString(36).substr(2, 9)}`;
@@ -56,7 +53,7 @@ const normalize = ({ title, description, url, posts }) => {
 };
 
 const getFeed = (url) => axios
-  .get(allOrigins.get(url))
+  .get(proxy.get(url))
   .catch((err) => {
     if (err.response) {
       throw new Error('addFeedProcess.errors.notAvailableService');
@@ -78,7 +75,7 @@ const getFeed = (url) => axios
   })
   .then((parsedFeed) => normalize({ ...parsedFeed, url }));
 
-const startPolling = (state, watchedState) => () => {
+const startPolling = (state) => () => {
   if (state.timerToken) clearTimeout(state.timerToken);
   const fetchFeeds = () => {
     const feedResponses = state.feeds.map((feed) => getFeed(feed.url));
@@ -88,52 +85,46 @@ const startPolling = (state, watchedState) => () => {
       .all(feedResponses)
       .then((feeds) => feeds.flatMap((feed) => feed.posts))
       .then((posts) => posts.filter(hasNotInState))
-      .then((posts) => { watchedState.posts = [...posts, ...state.posts]; })
-      .then(startPolling(state, watchedState))
+      .then((posts) => { state.posts = [...posts, ...state.posts]; })
+      .then(startPolling(state))
       .catch(() => clearTimeout(state.timerToken));
   };
-  watchedState.timerToken = setTimeout(fetchFeeds, TIME_TO_LIVE);
+  state.timerToken = setTimeout(fetchFeeds, TIME_TO_LIVE);
 };
 
-export const addFeed = (data, state, watchedState) => {
+export const addFeed = (data, state) => {
   const error = validate(data.url, state);
   const isNotValid = error !== null;
 
-  watchedState.addFeedProcess.data = data;
-  watchedState.addFeedProcess.error = error;
+  state.addFeedProcess.data = data;
+  state.addFeedProcess.error = error;
 
   if (isNotValid) {
-    watchedState.addFeedProcess.validationState = ADD_FEED_STATE.INVALID;
+    state.addFeedProcess.validationState = ADD_FEED_STATE.INVALID;
     return;
   }
 
-  watchedState.addFeedProcess.validationState = ADD_FEED_STATE.VAILD;
-  watchedState.addFeedProcess.state = ADD_FEED_STATE.PROCESSING;
+  state.addFeedProcess.validationState = ADD_FEED_STATE.VAILD;
+  state.addFeedProcess.state = ADD_FEED_STATE.PROCESSING;
 
   getFeed(data.url)
     .then(({ feed, posts }) => {
-      watchedState.feeds = [feed, ...state.feeds];
-      watchedState.posts = [...posts, ...state.posts];
-      watchedState.addFeedProcess.state = ADD_FEED_STATE.PROCESSED;
+      state.feeds = [feed, ...state.feeds];
+      state.posts = [...posts, ...state.posts];
+      state.addFeedProcess.state = ADD_FEED_STATE.PROCESSED;
     })
-    .then(startPolling(state, watchedState))
+    .then(startPolling(state))
     .catch((err) => {
-      watchedState.addFeedProcess.error = err.message;
-      watchedState.addFeedProcess.state = ADD_FEED_STATE.FAILED;
+      state.addFeedProcess.error = err.message;
+      state.addFeedProcess.state = ADD_FEED_STATE.FAILED;
     });
 };
 
-export const previewPost = (postId, state, watchedState) => {
-  const { seenPosts } = state.uiState;
-  const isActivePost = (post) => post.id === postId;
-
-  watchedState.uiState.activePost = state.posts.find(isActivePost);
-
-  if (seenPosts.includes(postId)) return;
-
-  watchedState.uiState.seenPosts = [...seenPosts, postId];
+export const previewPost = (postId, state) => {
+  state.uiState.activePostId = postId;
+  state.uiState.seenPosts.add(postId);
 };
 
-export const clearActivePost = (watchedState) => {
-  watchedState.uiState.activePost = {};
+export const clearActivePost = (state) => {
+  state.uiState.activePostId = null;
 };

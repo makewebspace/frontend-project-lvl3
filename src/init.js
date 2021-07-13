@@ -1,25 +1,26 @@
-import i18next from 'i18next';
+import i18n from 'i18next';
 import initView from './view.js';
 import resources from './locales';
 import { ADD_FEED_STATE } from './service.js';
 
-const initialState = {
-  feeds: [],
-  posts: [],
-  addFeedProcess: {
-    state: ADD_FEED_STATE.FILLING,
-    validationState: ADD_FEED_STATE.VALID,
-    data: { url: '' },
-    error: null,
-  },
-  timerToken: null,
-  uiState: {
-    seenPosts: [],
-    activePost: {},
-  },
-};
-
 export default () => {
+  const initialState = {
+    feeds: [],
+    posts: [],
+    addFeedProcess: {
+      state: ADD_FEED_STATE.FILLING,
+      validationState: ADD_FEED_STATE.VALID,
+      data: { url: '' },
+      error: null,
+    },
+    timerToken: null,
+    uiState: {
+      seenPosts: new Set(),
+      activePostId: null,
+    },
+  };
   const options = { lng: 'ru', resources };
-  return i18next.init(options).then(() => initView(initialState));
+  const i18nInstance = i18n.createInstance();
+  const initApp = () => initView(initialState, i18nInstance);
+  return i18nInstance.init(options).then(initApp);
 };

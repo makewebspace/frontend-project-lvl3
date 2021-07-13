@@ -1,4 +1,3 @@
-import i18n from 'i18next';
 import onChange from 'on-change';
 import {
   addFeed,
@@ -43,7 +42,7 @@ const toFeedElement = (feed) => {
   return container;
 };
 
-const toPostElement = (state, post) => {
+const toPostElement = (state, i18n, post) => {
   const container = createElement('li', [
     'list-group-item',
     'd-flex',
@@ -52,7 +51,7 @@ const toPostElement = (state, post) => {
     'border-0',
     'border-end-0',
   ]);
-  const isSeenPost = state.uiState.seenPosts.includes(post.id);
+  const isSeenPost = state.uiState.seenPosts.has(post.id);
   const classNames = isSeenPost ? ['fw-normal', 'link-secondary'] : ['fw-bold'];
   const title = createElement('a', classNames, post.title);
 
@@ -73,7 +72,7 @@ const toPostElement = (state, post) => {
   return container;
 };
 
-const renderFeeds = (state) => {
+const renderFeeds = (state, i18n) => {
   elements.feeds.innerHTML = '';
 
   const fragment = document.createDocumentFragment();
@@ -85,12 +84,12 @@ const renderFeeds = (state) => {
   elements.feeds.appendChild(container);
 };
 
-const renderPosts = (state) => {
+const renderPosts = (state, i18n) => {
   elements.posts.innerHTML = '';
 
   const fragment = document.createDocumentFragment();
 
-  state.posts.map(toPostElement.bind(null, state)).forEach(appendTo(fragment));
+  state.posts.map(toPostElement.bind(null, state, i18n)).forEach(appendTo(fragment));
 
   const container = createWrapper(i18n.t('posts'), fragment);
 
@@ -112,7 +111,7 @@ const toggleButton = (stateName) => {
   elements.submitBtn.disabled = stateName === 'disable';
 };
 
-const renderSuccess = () => {
+const renderSuccess = (i18n) => {
   clearForm();
   clearError();
   toggleButton('active');
@@ -120,7 +119,7 @@ const renderSuccess = () => {
   elements.feedback.textContent = i18n.t('addFeedProcess.processed');
 };
 
-const renderError = (state) => {
+const renderError = (state, i18n) => {
   clearError();
   elements.feedback.classList.add('text-danger');
   elements.feedback.textContent = i18n.t(state.addFeedProcess.error);
@@ -128,30 +127,32 @@ const renderError = (state) => {
 };
 
 const renderModal = (state) => {
-  const { title, description, link } = state.uiState.activePost;
+  const postId = state.uiState.activePostId;
+  const activePost = state.posts.find((post) => post.id === postId) || {};
+  const { title, description, link } = activePost;
   elements.modal.querySelector('.modal-title').textContent = title;
   elements.modal.querySelector('.modal-body').textContent = description;
   elements.modal.querySelector('.full-article').setAttribute('href', link);
 };
 
-const render = (state) => (path, value) => {
-  if (path === 'feeds') renderFeeds(state);
-  if (path === 'posts') renderPosts(state);
-  if (path === 'uiState.seenPosts') renderPosts(state);
-  if (path === 'uiState.activePost') renderModal(state);
-  if (path === 'addFeedProcess.error') renderError(state);
+const render = (state, i18n) => (path, value) => {
+  if (path === 'feeds') renderFeeds(state, i18n);
+  if (path === 'posts') renderPosts(state, i18n);
+  if (path === 'uiState.seenPosts') renderPosts(state, i18n);
+  if (path === 'uiState.activePostId') renderModal(state);
+  if (path === 'addFeedProcess.error') renderError(state, i18n);
   if (path === 'addFeedProcess.state') {
     if (value === ADD_FEED_STATE.PROCESSING) {
       toggleButton('disable');
       clearError();
     }
-    if (value === ADD_FEED_STATE.PROCESSED) renderSuccess();
+    if (value === ADD_FEED_STATE.PROCESSED) renderSuccess(i18n);
     if (value === ADD_FEED_STATE.FAILED) toggleButton('active');
   }
 };
 
-export default (state) => {
-  const watchedState = onChange(state, render(state));
+export default (state, i18n) => {
+  const watchedState = onChange(state, render(state, i18n));
 
   elements.feeds = document.querySelector('.feeds');
   elements.posts = document.querySelector('.posts');
@@ -165,7 +166,7 @@ export default (state) => {
     event.preventDefault();
     const formData = new FormData(event.target);
     const data = { url: formData.get('url').trim().toLowerCase() };
-    addFeed(data, state, watchedState);
+    addFeed(data, watchedState);
   });
 
   elements.modal.addEventListener('hidden.bs.modal', () => {
@@ -175,6 +176,6 @@ export default (state) => {
   elements.posts.addEventListener('click', (event) => {
     if (!event.target.dataset.id) return;
     const postId = event.target.dataset.id;
-    previewPost(postId, state, watchedState);
+    previewPost(postId, watchedState);
   });
 };
