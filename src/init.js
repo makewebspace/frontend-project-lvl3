@@ -1,7 +1,9 @@
+import 'bootstrap/js/dist/modal.js';
 import i18n from 'i18next';
 import initView from './view.js';
 import resources from './locales';
-import { ADD_FEED_STATE } from './service.js';
+import * as service from './service.js';
+import { ADD_FEED_STATE } from './constants.js';
 
 export default () => {
   const initialState = {
@@ -13,7 +15,6 @@ export default () => {
       data: { url: '' },
       error: null,
     },
-    timerToken: null,
     uiState: {
       seenPosts: new Set(),
       activePostId: null,
@@ -21,6 +22,7 @@ export default () => {
   };
   const options = { lng: 'ru', resources };
   const i18nInstance = i18n.createInstance();
-  const initApp = () => initView(initialState, i18nInstance);
-  return i18nInstance.init(options).then(initApp);
+  const initApp = () => initView(initialState, i18nInstance, service);
+  const longPolling = (state) => service.startPolling(state);
+  return i18nInstance.init(options).then(initApp).then(longPolling);
 };

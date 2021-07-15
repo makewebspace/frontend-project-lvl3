@@ -1,18 +1,7 @@
-/* eslint-disable no-param-reassign */
 import * as yup from 'yup';
 import axios from 'axios';
 import parse from './parser.js';
-
-export const ADD_FEED_STATE = {
-  FILLING: 'filling',
-  PROCESSING: 'processing',
-  PROCESSED: 'processed',
-  FAILED: 'failed',
-  VAILD: 'valid',
-  INVALID: 'invalid',
-};
-
-const TIME_TO_LIVE = 5000; // in ms
+import { ADD_FEED_STATE, TIME_TO_LIVE } from './constants.js';
 
 const proxy = {
   get: (url) => `https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(url)}`,
@@ -75,8 +64,7 @@ const getFeed = (url) => axios
   })
   .then((parsedFeed) => normalize({ ...parsedFeed, url }));
 
-const startPolling = (state) => () => {
-  if (state.timerToken) clearTimeout(state.timerToken);
+export const startPolling = (state) => {
   const fetchFeeds = () => {
     const feedResponses = state.feeds.map((feed) => getFeed(feed.url));
     const postLinks = state.posts.map((post) => post.link);
@@ -86,20 +74,18 @@ const startPolling = (state) => () => {
       .then((feeds) => feeds.flatMap((feed) => feed.posts))
       .then((posts) => posts.filter(hasNotInState))
       .then((posts) => { state.posts = [...posts, ...state.posts]; })
-      .then(startPolling(state))
-      .catch(() => clearTimeout(state.timerToken));
+      .finally(() => startPolling(state));
   };
-  state.timerToken = setTimeout(fetchFeeds, TIME_TO_LIVE);
+  setTimeout(fetchFeeds, TIME_TO_LIVE);
 };
 
 export const addFeed = (data, state) => {
   const error = validate(data.url, state);
-  const isNotValid = error !== null;
 
   state.addFeedProcess.data = data;
   state.addFeedProcess.error = error;
 
-  if (isNotValid) {
+  if (error) {
     state.addFeedProcess.validationState = ADD_FEED_STATE.INVALID;
     return;
   }
@@ -113,7 +99,6 @@ export const addFeed = (data, state) => {
       state.posts = [...posts, ...state.posts];
       state.addFeedProcess.state = ADD_FEED_STATE.PROCESSED;
     })
-    .then(startPolling(state))
     .catch((err) => {
       state.addFeedProcess.error = err.message;
       state.addFeedProcess.state = ADD_FEED_STATE.FAILED;

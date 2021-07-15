@@ -1,12 +1,5 @@
 import onChange from 'on-change';
-import {
-  addFeed,
-  previewPost,
-  clearActivePost,
-  ADD_FEED_STATE,
-} from './service.js';
-
-const elements = {};
+import { ADD_FEED_STATE } from './constants.js';
 
 const appendTo = (fragment) => (element) => fragment.appendChild(element);
 
@@ -72,7 +65,7 @@ const toPostElement = (state, i18n, post) => {
   return container;
 };
 
-const renderFeeds = (state, i18n) => {
+const renderFeeds = (state, i18n, elements) => {
   elements.feeds.innerHTML = '';
 
   const fragment = document.createDocumentFragment();
@@ -84,7 +77,7 @@ const renderFeeds = (state, i18n) => {
   elements.feeds.appendChild(container);
 };
 
-const renderPosts = (state, i18n) => {
+const renderPosts = (state, i18n, elements) => {
   elements.posts.innerHTML = '';
 
   const fragment = document.createDocumentFragment();
@@ -96,37 +89,37 @@ const renderPosts = (state, i18n) => {
   elements.posts.appendChild(container);
 };
 
-const clearForm = () => {
+const clearForm = (elements) => {
   elements.urlInput.value = '';
   elements.urlInput.focus();
 };
 
-const clearError = () => {
+const clearError = (elements) => {
   elements.feedback.innerHTML = '';
   elements.feedback.classList.remove('text-success', 'text-danger');
   elements.urlInput.classList.remove('is-invalid');
 };
 
-const toggleButton = (stateName) => {
+const toggleButton = (stateName, elements) => {
   elements.submitBtn.disabled = stateName === 'disable';
 };
 
-const renderSuccess = (i18n) => {
-  clearForm();
-  clearError();
-  toggleButton('active');
+const renderSuccess = (i18n, elements) => {
+  clearForm(elements);
+  clearError(elements);
+  toggleButton('active', elements);
   elements.feedback.classList.add('text-success');
   elements.feedback.textContent = i18n.t('addFeedProcess.processed');
 };
 
-const renderError = (state, i18n) => {
-  clearError();
+const renderError = (state, i18n, elements) => {
+  clearError(elements);
   elements.feedback.classList.add('text-danger');
   elements.feedback.textContent = i18n.t(state.addFeedProcess.error);
   elements.urlInput.classList.add('is-invalid');
 };
 
-const renderModal = (state) => {
+const renderModal = (state, elements) => {
   const postId = state.uiState.activePostId;
   const activePost = state.posts.find((post) => post.id === postId) || {};
   const { title, description, link } = activePost;
@@ -135,32 +128,36 @@ const renderModal = (state) => {
   elements.modal.querySelector('.full-article').setAttribute('href', link);
 };
 
-const render = (state, i18n) => (path, value) => {
-  if (path === 'feeds') renderFeeds(state, i18n);
-  if (path === 'posts') renderPosts(state, i18n);
-  if (path === 'uiState.seenPosts') renderPosts(state, i18n);
-  if (path === 'uiState.activePostId') renderModal(state);
-  if (path === 'addFeedProcess.error') renderError(state, i18n);
+const render = (state, i18n, elements) => (path, value) => {
+  if (path === 'feeds' && value.length) renderFeeds(state, i18n, elements);
+  if (path === 'posts' && value.length) renderPosts(state, i18n, elements);
+  if (path === 'uiState.seenPosts') renderPosts(state, i18n, elements);
+  if (path === 'uiState.activePostId') renderModal(state, elements);
+  if (path === 'addFeedProcess.error') renderError(state, i18n, elements);
   if (path === 'addFeedProcess.state') {
     if (value === ADD_FEED_STATE.PROCESSING) {
-      toggleButton('disable');
-      clearError();
+      toggleButton('disable', elements);
+      clearError(elements);
     }
-    if (value === ADD_FEED_STATE.PROCESSED) renderSuccess(i18n);
-    if (value === ADD_FEED_STATE.FAILED) toggleButton('active');
+    if (value === ADD_FEED_STATE.PROCESSED) renderSuccess(i18n, elements);
+    if (value === ADD_FEED_STATE.FAILED) toggleButton('active', elements);
   }
 };
 
-export default (state, i18n) => {
-  const watchedState = onChange(state, render(state, i18n));
+export default (state, i18n, service) => {
+  const { addFeed, clearActivePost, previewPost } = service;
 
-  elements.feeds = document.querySelector('.feeds');
-  elements.posts = document.querySelector('.posts');
-  elements.feedback = document.querySelector('.feedback');
-  elements.addFeedForm = document.querySelector('.rss-form');
-  elements.submitBtn = document.querySelector('.rss-form button[type="submit"]');
-  elements.urlInput = document.getElementById('url-input');
-  elements.modal = document.getElementById('modal');
+  const elements = {
+    feeds: document.querySelector('.feeds'),
+    posts: document.querySelector('.posts'),
+    feedback: document.querySelector('.feedback'),
+    addFeedForm: document.querySelector('.rss-form'),
+    submitBtn: document.querySelector('.rss-form button[type="submit"]'),
+    urlInput: document.getElementById('url-input'),
+    modal: document.getElementById('modal'),
+  };
+
+  const watchedState = onChange(state, render(state, i18n, elements));
 
   elements.addFeedForm.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -178,4 +175,6 @@ export default (state, i18n) => {
     const postId = event.target.dataset.id;
     previewPost(postId, watchedState);
   });
+
+  return watchedState;
 };
