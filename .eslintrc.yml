@@ -5,6 +5,8 @@ root: true
 plugins:
   - jest
   - babel
+  - jest-dom
+  - testing-library
 
 env:
   node: true
@@ -16,8 +18,10 @@ parser: babel-eslint
 extends:
   - 'airbnb-base'
   - 'plugin:jest/recommended'
+  - 'plugin:jest-dom/recommended'
+  - 'plugin:testing-library/dom'
 
 rules:
   no-console: 0
   import/extensions: 0
-  object-curly-newline: ["error", { "ObjectPattern": "never" }]
+  no-param-reassign: 0

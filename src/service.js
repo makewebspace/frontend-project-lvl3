@@ -24,7 +24,9 @@ const validate = (url, state) => {
 
 const generateId = () => `_${Math.random().toString(36).substr(2, 9)}`;
 
-const normalize = ({ title, description, url, posts }) => {
+const normalize = ({
+  title, description, url, posts,
+}) => {
   const feed = {
     id: generateId(),
     url,
@@ -53,9 +55,6 @@ const getFeed = (url) => axios
     throw new Error('addFeedProcess.errors.unexpected');
   })
   .then((response) => {
-    if (response.data.status.http_code !== 200) {
-      throw new Error('addFeedProcess.errors.notFound');
-    }
     try {
       return parse(response.data.contents);
     } catch (_) {

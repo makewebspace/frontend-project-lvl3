@@ -12,7 +12,6 @@ export default {
         notAvailableService: 'Service is unavailable. Try later...',
         netWorkProblem: 'Network problems. Check your network settings!',
         unexpected: 'Something went wrong...',
-        notFound: 'Resource not found or not available...',
         notValidRss: 'Resource does not contain valid RSS',
       },
     },

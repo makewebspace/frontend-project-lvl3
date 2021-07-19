@@ -89,25 +89,18 @@ const renderPosts = (state, i18n, elements) => {
   elements.posts.appendChild(container);
 };
 
-const clearForm = (elements) => {
-  elements.urlInput.value = '';
-  elements.urlInput.focus();
-};
-
 const clearError = (elements) => {
   elements.feedback.innerHTML = '';
   elements.feedback.classList.remove('text-success', 'text-danger');
   elements.urlInput.classList.remove('is-invalid');
 };
 
-const toggleButton = (stateName, elements) => {
-  elements.submitBtn.disabled = stateName === 'disable';
-};
-
 const renderSuccess = (i18n, elements) => {
-  clearForm(elements);
   clearError(elements);
-  toggleButton('active', elements);
+  elements.urlInput.value = '';
+  elements.urlInput.removeAttribute('readonly');
+  elements.urlInput.focus();
+  elements.submitBtn.disabled = false;
   elements.feedback.classList.add('text-success');
   elements.feedback.textContent = i18n.t('addFeedProcess.processed');
 };
@@ -117,6 +110,17 @@ const renderError = (state, i18n, elements) => {
   elements.feedback.classList.add('text-danger');
   elements.feedback.textContent = i18n.t(state.addFeedProcess.error);
   elements.urlInput.classList.add('is-invalid');
+};
+
+const renderProcessing = (elements) => {
+  clearError(elements);
+  elements.submitBtn.disabled = true;
+  elements.urlInput.setAttribute('readonly', true);
+};
+
+const renderFailed = (elements) => {
+  elements.submitBtn.disabled = false;
+  elements.urlInput.removeAttribute('readonly');
 };
 
 const renderModal = (state, elements) => {
@@ -135,12 +139,9 @@ const render = (state, i18n, elements) => (path, value) => {
   if (path === 'uiState.activePostId') renderModal(state, elements);
   if (path === 'addFeedProcess.error') renderError(state, i18n, elements);
   if (path === 'addFeedProcess.state') {
-    if (value === ADD_FEED_STATE.PROCESSING) {
-      toggleButton('disable', elements);
-      clearError(elements);
-    }
+    if (value === ADD_FEED_STATE.PROCESSING) renderProcessing(elements);
     if (value === ADD_FEED_STATE.PROCESSED) renderSuccess(i18n, elements);
-    if (value === ADD_FEED_STATE.FAILED) toggleButton('active', elements);
+    if (value === ADD_FEED_STATE.FAILED) renderFailed(elements);
   }
 };
 

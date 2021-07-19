@@ -12,7 +12,6 @@ export default {
         notAvailableService: 'Сервис не доступен. Попробуйте позже...',
         netWorkProblem: 'Ошибка сети',
         unexpected: 'Что-то пошло не так...',
-        notFound: 'Ресурс не найден или не доступен...',
         notValidRss: 'Ресурс не содержит валидный RSS',
       },
     },
